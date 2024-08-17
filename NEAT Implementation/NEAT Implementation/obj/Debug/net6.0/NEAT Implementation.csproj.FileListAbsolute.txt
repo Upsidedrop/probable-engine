@@ -12,3 +12,4 @@ C:\Users\ashby\GitHub\probable-engine\NEAT Implementation\NEAT Implementation\ob
 C:\Users\ashby\GitHub\probable-engine\NEAT Implementation\NEAT Implementation\obj\Debug\net6.0\NEAT Implementation.pdb
 C:\Users\ashby\GitHub\probable-engine\NEAT Implementation\NEAT Implementation\obj\Debug\net6.0\NEAT Implementation.genruntimeconfig.cache
 C:\Users\ashby\GitHub\probable-engine\NEAT Implementation\NEAT Implementation\obj\Debug\net6.0\ref\NEAT Implementation.dll
+C:\Users\ashby\GitHub\probable-engine\NEAT Implementation\NEAT Implementation\obj\Debug\net6.0\NEAT Implementation.sourcelink.json
