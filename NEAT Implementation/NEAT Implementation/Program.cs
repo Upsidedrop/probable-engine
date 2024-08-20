@@ -1,57 +1,46 @@
 ﻿namespace NEAT_Implementation
 {
+    using System;
     using System.Linq;
+
     internal class Program
     {
-        static int innovCount = 4;
-        static int[] outputIds = { 5 };
-        static int[] inputIds = { 1,2,3 };
+        //revert from readonly when finished
+        static int innovCount = 8;
+        static Random random = new();
+        readonly static int[] outputIds = { 4 };
+        readonly static int[] inputIds = { 1, 2, 3 };
+        readonly static bool managesInstances = true;
+        //static bool speciateInstances = true;
+        readonly static int targetInstanceCount = 10;
         static void Main()
         {
-            List<Connection> father = new();
-            List<Connection> mother = new();
-            father.Add(new(0, 1, 4, 1));
-            father.Add(new(0, 2, 4, 2));
-            father.Add(new(0, 2, 5, 4));
-            father.Add(new(0, 3, 5, 5));
-            father.Add(new(0, 4, 5, 6));
-            mother.Add(new(1, 1, 4, 1));
-            mother.Add(new(1, 2, 4, 2));
-            mother.Add(new(1, 3, 4, 3));
-            mother.Add(new(1, 2, 5, 4));
-            mother.Add(new(1, 4, 5, 6));
-            mother.Add(new(1, 1, 6, 7));
-            mother.Add(new(1, 6, 4, 8));
-            father[2].enabled = false;
-            mother[3].enabled = false;
-            mother[0].enabled = false;
-            Console.WriteLine("MOTHER");
-            foreach (Connection item in mother)
+            //speciateInstances = speciateInstances && managesInstances;
+            if (managesInstances)
             {
-                Console.WriteLine(item.innovId + " " + item.input + " -> "+item.output);
-            }
-            Console.WriteLine("FATHER");
-            foreach (Connection item in father)
-            {
-                Console.WriteLine(item.innovId+" "+item.input + " -> " + item.output);
-            }
-            Genome temp = Reproduce(father, mother);
-            Console.WriteLine("COMBINED");
-            foreach (Connection item in temp.connectionGenes)
-            {
-                if (item.weight > 0) {
-                    Console.WriteLine(item.innovId + " " + item.input + " -> "+"MOTHER"+" -> " + item.output + " -> " + item.enabled);
-                }
-                else
+
+                Genome[] instances = new Genome[targetInstanceCount];
+                List<Action> tasks = new();
+                List<Connection> connections = new();
+                for (int i = 0; i < inputIds.Length; i++)
                 {
-                    Console.WriteLine(item.innovId + " " + item.input + " -> " + "FATHER" + " -> " + item.output + " -> "+item.enabled);
+                    for (int j = 0; j < outputIds.Length; j++)
+                    {
+                        connections.Add(new(0, inputIds[i], outputIds[j], inputIds.Length + outputIds.Length + (i + 1) * (j + 1)));
+                    }
                 }
+                for (int i = 0; i < targetInstanceCount; i++)
+                {
+
+                    instances[i] = (new(connections));
+                    //Creates new variable because instances[i] grabs i at time of execution
+                    int tmp = i;
+                    tasks.Add(() => instances[tmp].Mutate());
+                    tasks.Add(() => instances[tmp].RunConnections());
+                }
+                Parallel.Invoke(tasks.ToArray());
+
             }
-            foreach(Node node in temp.nodeGenes)
-            {
-                Console.Write(node.id + " ");
-            }
-            temp.RunConnections();
         }
         static T? Search<T>(List<T> list, Predicate<T> predicate)
         {
@@ -94,12 +83,11 @@
 
         class Genome
         {
-            Random random = new();
-            public List<Node> nodeGenes = new();
-            public List<Connection> connectionGenes = new();
+            public double cost;
+            public List<Node> nodeGenes;
+            public List<Connection> connectionGenes;
             public void RunConnections()
             {
-
                 List<Connection> outputPath = new();
 
                 foreach (int id in outputIds)
@@ -125,6 +113,7 @@
                         }
                     }
                 }
+                
             }
 
             public void Mutate()
@@ -155,7 +144,7 @@
                     nodeGenes.Add(new(createdNode));
                     connectionGenes.Add(new(connectionGenes[randIndex].weight, connectionGenes[randIndex].input, createdNode, innovCount));
                     innovCount++;
-                    connectionGenes.Add(new(connectionGenes[randIndex].weight, createdNode, connectionGenes[randIndex].output, innovCount));
+                    connectionGenes.Add(new(1, createdNode, connectionGenes[randIndex].output, innovCount));
                     innovCount++;
                 }
                 else
@@ -197,19 +186,26 @@
             }
             public Genome(List<Connection> connections)
             {
-                connectionGenes = connections;
+                connectionGenes = new();
+                //Had to copy over like this so the list wouldnt save a reference
+                foreach (Connection item in connections)
+                {
+                    connectionGenes.Add(new Connection(item.weight, item.input, item.output, item.innovId));
+
+                }
+
                 nodeGenes = new();
                 List<int> nodeIds = new();
-                nodeIds = connections.Select(o => o.output).Union(connections.Select(o => o.input)).ToList();
+                nodeIds = connections.Select(o => o.input).Union(connections.Select(o => o.output)).ToList();
                 foreach (int id in nodeIds)
                 {
                     nodeGenes.Add(new(id));
                 }
+
             }
         }
-        static Genome Reproduce(List<Connection> father, List<Connection> mother)
+        static List<Connection> Reproduce(List<Connection> father, List<Connection> mother)
         {
-            Random rand = new();
             List<Connection> offspring = new();
             offspring.AddRange(father.Where(f => !mother.Select(m => m.innovId).Contains(f.innovId)).ToList());
             offspring.AddRange(mother.Where(m => !father.Select(f => f.innovId).Contains(m.innovId)).ToList());
@@ -218,16 +214,16 @@
             foreach (int id in sharedConnections)
             {
                 List<Connection> temp;
-                temp = rand.Next(2) == 1 ? father : mother;
+                temp = random.Next(2) == 1 ? father : mother;
                 offspring.Add(Search(temp, o => o.innovId == id));
                 if (!(Search(father, o => o.innovId == id).enabled && Search(mother, o => o.innovId == id).enabled))
                 {
                     offspring[^1].enabled = false;
                 }
             }
-            return new Genome(offspring);
+            return (offspring);
         }
-
+        
     }
 
 }

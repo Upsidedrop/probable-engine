@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("NEAT Implementation")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5c1fdf802bc49bcded3d734acf791a2268412d23")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d0b9758fbe49d00591060c246da62276df1c1072")]
 [assembly: System.Reflection.AssemblyProductAttribute("NEAT Implementation")]
 [assembly: System.Reflection.AssemblyTitleAttribute("NEAT Implementation")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
